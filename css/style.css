@@ -1,13 +1,16 @@
 :root {
   --bg: #f5f7fa; --card: #ffffff; --ink: #1a2233; --muted: #64748b;
-  --brand: #0f6b5c; --brand-2: #0d9488; --line: #e2e8f0;
+  --brand: #2b3990; --brand-2: #2e75b6; --accent: #ed6e9c; --line: #e2e8f0;
   --warn-bg: #fef3c7; --warn-ink: #92400e; --danger: #b91c1c; --ok: #047857;
 }
 * { box-sizing: border-box; }
 body { margin: 0; font-family: "Sarabun", "Segoe UI", Tahoma, sans-serif; background: var(--bg); color: var(--ink); font-size: 15px; }
-header.app { background: var(--brand); color: #fff; padding: 12px 16px; }
+header.app { background: var(--brand); color: #fff; padding: 10px 16px; }
 header.app h1 { margin: 0; font-size: 1.15rem; }
 header.app .sub { font-size: .8rem; opacity: .85; }
+.brandbar { display: flex; align-items: center; gap: 12px; }
+.logo-chip { background: #fff; border-radius: 10px; padding: 5px; display: inline-flex; flex: 0 0 auto; }
+.logo-chip img { height: 42px; width: auto; display: block; }
 .disclaimer { background: var(--warn-bg); color: var(--warn-ink); padding: 8px 16px; font-size: .8rem; line-height: 1.4; }
 nav.tabs { display: flex; overflow-x: auto; background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
 nav.tabs button { flex: 0 0 auto; border: 0; background: none; padding: 12px 14px; font: inherit; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; white-space: nowrap; }
