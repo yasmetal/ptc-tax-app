@@ -1,4 +1,6 @@
-# PTC Tax App — เครื่องมือคำนวณภาษีบริษัท/ห้างหุ้นส่วนนิติบุคคลไทย
+# Phattha Corporation Co., Ltd. — ระบบคำนวณภาษีบริษัท/ห้างหุ้นส่วนนิติบุคคลไทย
+
+<img src="assets/logo-128.png" alt="Phattha Corporation logo" height="80">
 
 เว็บแอป static (HTML + Vanilla JS) ใช้งานบนมือถือได้ รันบน GitHub Pages ไม่มี server —
 ข้อมูลเก็บใน localStorage ของเบราว์เซอร์ + สำรองขึ้น Google Drive ของผู้ใช้เองได้
