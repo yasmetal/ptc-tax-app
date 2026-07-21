@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PTC Tax App — เครื่องมือคำนวณภาษีนิติบุคคลไทย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="app">
+  <h1>PTC Tax App — คำนวณภาษีบริษัท/ห้างหุ้นส่วนนิติบุคคล</h1>
+  <div class="sub">CIT (ภ.ง.ด.50/51) · WHT (ภ.ง.ด.1/3/53) · VAT (ภ.พ.30) · เบี้ยปรับ/เงินเพิ่ม · ปฏิทินภาษี</div>
+</header>
+
+<div class="disclaimer">
+  ⚠️ <b>คำเตือน:</b> แอปนี้เป็นเครื่องมือช่วยคำนวณเบื้องต้นเท่านั้น <u>ไม่ใช่คำแนะนำทางภาษีที่เป็นทางการ</u>
+  อัตราภาษีและกฎเกณฑ์อาจเปลี่ยนแปลงตามพระราชกฤษฎีกา/ประกาศกรมสรรพากร โปรดตรวจสอบกับ
+  <a href="https://www.rd.go.th" target="_blank" rel="noopener">rd.go.th</a> และนักบัญชี/ผู้สอบบัญชีรับอนุญาตก่อนยื่นแบบจริงทุกครั้ง
+</div>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="dash" class="active">📅 แดชบอร์ด</button>
+  <button data-tab="profile">🏢 โปรไฟล์บริษัท</button>
+  <button data-tab="cit">📊 ภ.ง.ด.50/51</button>
+  <button data-tab="wht">✂️ หัก ณ ที่จ่าย</button>
+  <button data-tab="vat">🧾 ภ.พ.30</button>
+  <button data-tab="penalty">⏰ เบี้ยปรับ/เงินเพิ่ม</button>
+  <button data-tab="settings">⚙️ ตั้งค่า</button>
+</nav>
+
+<main>
+
+<!-- ================= แดชบอร์ด ================= -->
+<section class="tab-page active" id="page-dash">
+  <div class="card">
+    <h2>ปฏิทินกำหนดเวลายื่นภาษี (12 เดือนข้างหน้า)</h2>
+    <p class="muted">คำนวณอัตโนมัติจากรอบบัญชีในโปรไฟล์บริษัท — คอลัมน์ "ยื่นออนไลน์" รวมสิทธิขยาย +8 วัน
+      (มีผลถึง 31 ม.ค. 2570 ตามประกาศกระทรวงการคลัง)</p>
+    <div class="scroll-x"><table id="deadlineTable">
+      <thead><tr><th>สถานะ</th><th>แบบ</th><th>งวด</th><th>ยื่นกระดาษภายใน</th><th>ยื่นออนไลน์ภายใน</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <h2>สรุปสถานะบริษัท</h2>
+    <div id="dashSummary" class="muted">— กรอกโปรไฟล์บริษัทก่อน —</div>
+  </div>
+</section>
+
+<!-- ================= โปรไฟล์ ================= -->
+<section class="tab-page" id="page-profile">
+  <div class="card">
+    <h2>โปรไฟล์บริษัท</h2>
+    <div class="grid g2">
+      <div><label>ชื่อบริษัท/ห้างหุ้นส่วน</label><input id="pf-name"></div>
+      <div><label>เลขประจำตัวผู้เสียภาษี (13 หลัก)</label><input id="pf-taxid" maxlength="13"></div>
+      <div><label>สาขา</label><input id="pf-branch" value="00000"></div>
+      <div><label>ที่อยู่</label><input id="pf-address"></div>
+      <div><label>ทุนจดทะเบียนชำระแล้ว (บาท) ณ วันสิ้นรอบบัญชี</label><input id="pf-capital" type="number" min="0"></div>
+      <div><label>รายได้จากการขาย/บริการต่อรอบบัญชี (บาท)</label><input id="pf-revenue" type="number" min="0"></div>
+      <div><label>เดือนสิ้นรอบบัญชี</label>
+        <select id="pf-fyem"></select></div>
+      <div><label>วันสิ้นรอบบัญชี</label><input id="pf-fyed" type="number" min="1" max="31" value="31"></div>
+      <div><label>จดทะเบียน VAT หรือไม่</label>
+        <select id="pf-vat"><option value="1">จดทะเบียน VAT</option><option value="0">ไม่ได้จด</option></select></div>
+    </div>
+    <div id="smeStatus" class="alert ok" style="display:none"></div>
+    <button class="btn" id="pf-save">บันทึกโปรไฟล์</button>
+  </div>
+</section>
+
+<!-- ================= CIT ================= -->
+<section class="tab-page" id="page-cit">
+  <div class="card">
+    <h2>ภ.ง.ด.51 — ภาษีครึ่งรอบบัญชี (จากประมาณการ)</h2>
+    <div class="grid g2">
+      <div><label>ประมาณการกำไรสุทธิทางภาษี "ทั้งปี" (บาท)</label><input id="p51-est" type="number"></div>
+      <div><label>กำไรสุทธิจริงปีก่อน / ที่คาดว่าจะเกิดจริง (ใช้เช็คความเสี่ยง 25%)</label><input id="p51-ref" type="number"></div>
+      <div><label>ภาษีถูกหัก ณ ที่จ่ายช่วงครึ่งปีแรก (เครดิต)</label><input id="p51-wht" type="number" value="0"></div>
+    </div>
+    <button class="btn" id="p51-calc">คำนวณ ภ.ง.ด.51</button>
+    <div id="p51-result"></div>
+  </div>
+
+  <div class="card">
+    <h2>ภ.ง.ด.50 — ภาษีสิ้นรอบบัญชี (จากกำไรจริง)</h2>
+    <h3>1) ปรับกำไรทางบัญชี → กำไรสุทธิทางภาษี</h3>
+    <div class="grid g2">
+      <div><label>กำไร (ขาดทุน) สุทธิทางบัญชี</label><input id="p50-acc" type="number"></div>
+      <div><label>วันสิ้นรอบบัญชีปัจจุบัน</label><input id="p50-end" type="date"></div>
+    </div>
+    <h3>บวกกลับ: รายจ่ายต้องห้าม / ค่าเสื่อมส่วนเกินอัตราสรรพากร</h3>
+    <div id="addbackRows"></div>
+    <button class="btn small secondary" id="p50-add-addback">+ เพิ่มรายการบวกกลับ</button>
+    <h3>หักเพิ่ม: รายได้ยกเว้น / สิทธิหักเพิ่ม SME (เกิน 1 เท่า)</h3>
+    <div id="deductRows"></div>
+    <button class="btn small secondary" id="p50-add-deduct">+ เพิ่มรายการหักเพิ่ม</button>
+    <h3>ผลขาดทุนสะสมยกมา (ไม่เกิน 5 รอบบัญชี)</h3>
+    <div id="lossRows"></div>
+    <button class="btn small secondary" id="p50-add-loss">+ เพิ่มขาดทุนยกมา</button>
+    <h3>2) เครดิตภาษี</h3>
+    <div class="grid g2">
+      <div><label>ภาษีที่ชำระแล้วตาม ภ.ง.ด.51</label><input id="p50-paid51" type="number" value="0"></div>
+      <div><label>ภาษีถูกหัก ณ ที่จ่ายระหว่างปี</label><input id="p50-whtc" type="number" value="0"></div>
+    </div>
+    <button class="btn" id="p50-calc">คำนวณ ภ.ง.ด.50</button>
+    <div id="p50-result"></div>
+    <div id="p51-check-result"></div>
+  </div>
+
+  <div class="card">
+    <h2>เครื่องมือช่วย: ค่าเสื่อมราคาตามอัตราสรรพากร</h2>
+    <div class="grid g3">
+      <div><label>ประเภททรัพย์สิน</label><select id="dep-type"></select></div>
+      <div><label>มูลค่าต้นทุน (บาท)</label><input id="dep-cost" type="number"></div>
+      <div><label>จำนวนวันที่ใช้ในรอบบัญชี</label><input id="dep-days" type="number" value="365" max="366"></div>
+    </div>
+    <button class="btn" id="dep-calc">คำนวณค่าเสื่อมภาษี</button>
+    <div id="dep-result"></div>
+  </div>
+</section>
+
+<!-- ================= WHT ================= -->
+<section class="tab-page" id="page-wht">
+  <div class="card">
+    <h2>บันทึกรายการหัก ณ ที่จ่าย</h2>
+    <div class="grid g2">
+      <div><label>วันที่จ่ายเงิน</label><input id="w-date" type="date"></div>
+      <div><label>ประเภทรายจ่าย</label><select id="w-type"></select></div>
+      <div><label>ผู้รับเงิน: ชื่อ</label><input id="w-payee"></div>
+      <div><label>เลขผู้เสียภาษีผู้รับ (13 หลัก)</label><input id="w-payee-tin" maxlength="13"></div>
+      <div><label>ที่อยู่ผู้รับ</label><input id="w-payee-addr"></div>
+      <div><label>ประเภทผู้รับ</label>
+        <select id="w-payee-kind">
+          <option value="individual">บุคคลธรรมดา → ภ.ง.ด.3</option>
+          <option value="company">นิติบุคคล → ภ.ง.ด.53</option>
+          <option value="employee">พนักงาน → ภ.ง.ด.1</option>
+        </select></div>
+      <div><label>จำนวนเงินที่จ่าย (ก่อนหักภาษี)</label><input id="w-amount" type="number"></div>
+    </div>
+    <div id="w-salary-extra" style="display:none">
+      <div class="grid g3">
+        <div><label>งวดจ่ายต่อปี</label><input id="w-periods" type="number" value="12"></div>
+        <div><label>โบนัสทั้งปี (ถ้ามี)</label><input id="w-bonus" type="number" value="0"></div>
+        <div><label>ค่าลดหย่อนอื่นของพนักงาน</label><input id="w-allow" type="number" value="0"></div>
+      </div>
+      <p class="muted">คำนวณแบบมาตรฐาน: เงินได้ทั้งปี − ค่าใช้จ่าย 50% (สูงสุด 100,000) − ลดหย่อนส่วนตัว 60,000 − ลดหย่อนอื่น → ภาษีอัตราก้าวหน้า ÷ งวด</p>
+    </div>
+    <button class="btn" id="w-add">คำนวณ + บันทึกรายการ</button>
+    <div id="w-preview"></div>
+  </div>
+
+  <div class="card">
+    <h2>ทะเบียนรายการเดือนนี้ <span class="muted">(กรองตามเดือน)</span></h2>
+    <label>เดือนภาษี</label><input id="w-month" type="month" style="max-width:200px">
+    <div class="scroll-x"><table id="whtTable">
+      <thead><tr><th>วันที่</th><th>ผู้รับ</th><th>ประเภท</th><th>แบบ</th>
+        <th class="num">เงินได้</th><th class="num">อัตรา</th><th class="num">ภาษีหัก</th><th></th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><th colspan="4">รวมนำส่ง</th><th class="num" id="w-sum-amt"></th><th></th><th class="num" id="w-sum-tax"></th><th></th></tr></tfoot>
+    </table></div>
+    <button class="btn secondary" id="w-export">⬇ ส่งออก CSV ใบแนบ (สำหรับ RD Prep / e-Filing)</button>
+    <p class="muted">รูปแบบคอลัมน์อ้างอิงใบแนบ ภ.ง.ด.3/53 — โปรดตรวจสอบ spec นำเข้าเวอร์ชันล่าสุดของโปรแกรม RD Prep ที่ efiling.rd.go.th ก่อนอัปโหลดจริง</p>
+  </div>
+</section>
+
+<!-- ================= VAT ================= -->
+<section class="tab-page" id="page-vat">
+  <div class="card">
+    <h2>บันทึกใบกำกับภาษี (รายใบ)</h2>
+    <div class="grid g2">
+      <div><label>ประเภท</label>
+        <select id="v-type"><option value="sale">ภาษีขาย (ขายสินค้า/บริการ)</option>
+          <option value="purchase">ภาษีซื้อ</option></select></div>
+      <div><label>วันที่ในใบกำกับ</label><input id="v-date" type="date"></div>
+      <div><label>เลขที่ใบกำกับ</label><input id="v-no"></div>
+      <div><label>ชื่อคู่ค้า</label><input id="v-party"></div>
+      <div><label>เลขผู้เสียภาษีคู่ค้า</label><input id="v-party-tin" maxlength="13"></div>
+      <div><label>มูลค่าสินค้า/บริการ (ฐานภาษี)</label><input id="v-base" type="number"></div>
+      <div><label>VAT (เว้นว่าง = คำนวณอัตโนมัติตามอัตราของวันที่)</label><input id="v-vat" type="number"></div>
+      <div id="v-disallowed-wrap" style="display:none"><label>ภาษีซื้อต้องห้าม?</label>
+        <select id="v-disallowed"><option value="0">เครดิตได้</option><option value="1">ต้องห้าม (เช่น ค่ารับรอง, รถยนต์นั่ง)</option></select></div>
+    </div>
+    <button class="btn" id="v-add">บันทึกใบกำกับ</button>
+  </div>
+
+  <div class="card">
+    <h2>สรุป ภ.พ.30 ประจำเดือน</h2>
+    <div class="grid g3">
+      <div><label>เดือนภาษี</label><input id="v-month" type="month"></div>
+      <div><label>เครดิตภาษียกมาจากเดือนก่อน</label><input id="v-bf" type="number" value="0"></div>
+    </div>
+    <div class="scroll-x"><table id="vatTable">
+      <thead><tr><th>วันที่</th><th>เลขที่</th><th>คู่ค้า</th><th>ประเภท</th>
+        <th class="num">ฐานภาษี</th><th class="num">VAT</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <button class="btn" id="v-calc">กระทบยอด ภ.พ.30</button>
+    <button class="btn secondary" id="v-export">⬇ ส่งออก CSV รายงานภาษีขาย/ซื้อ</button>
+    <div id="v-result"></div>
+  </div>
+</section>
+
+<!-- ================= Penalty ================= -->
+<section class="tab-page" id="page-penalty">
+  <div class="card">
+    <h2>คำนวณเบี้ยปรับ / เงินเพิ่ม กรณียื่นล่าช้า</h2>
+    <div class="grid g2">
+      <div><label>ประเภทแบบ</label>
+        <select id="pn-form">
+          <option value="vat">ภ.พ.30 (VAT)</option>
+          <option value="income">ภ.ง.ด.50/51/1/3/53 (ภาษีเงินได้/WHT)</option>
+        </select></div>
+      <div><label>ภาษีที่ต้องชำระตามแบบ (บาท)</label><input id="pn-tax" type="number"></div>
+      <div><label>วันครบกำหนดยื่น</label><input id="pn-due" type="date"></div>
+      <div><label>วันที่ยื่น/ชำระจริง</label><input id="pn-pay" type="date"></div>
+    </div>
+    <button class="btn" id="pn-calc">คำนวณ</button>
+    <div id="pn-result"></div>
+    <p class="muted">เงินเพิ่ม 1.5%/เดือน (เศษเดือนนับเป็น 1 เดือน) เพดานไม่เกินจำนวนภาษี ·
+      เบี้ยปรับ VAT ลดตาม ท.ป.81/2542 กรณียื่นเองก่อนถูกตรวจพบ · ค่าปรับอาญาเป็นอัตราเปรียบเทียบปรับทั่วไป
+      กรณีถูกประเมินโดยเจ้าพนักงานอัตราจะต่างจากนี้</p>
+  </div>
+</section>
+
+<!-- ================= Settings ================= -->
+<section class="tab-page" id="page-settings">
+  <div class="card">
+    <h2>ตารางอัตราภาษี (แก้ไขได้ — มี effective date)</h2>
+    <p class="muted">เมื่อกฎหมายเปลี่ยน ให้เพิ่ม "เวอร์ชันใหม่" ใน citVersions / vatVersions พร้อม effectiveFrom
+      โดยไม่ต้องแก้โค้ด ระบบจะเลือกอัตราตามวันที่ของธุรกรรมอัตโนมัติ (คำนวณย้อนหลังได้)</p>
+    <textarea id="cfg-json" class="code"></textarea>
+    <button class="btn" id="cfg-save">บันทึก config</button>
+    <button class="btn secondary" id="cfg-reset">คืนค่าเริ่มต้น</button>
+    <div id="cfg-msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>Google Drive Sync</h2>
+    <p class="muted">ต้องสร้าง OAuth 2.0 Client ID (Web application) ใน Google Cloud Console
+      และเพิ่ม origin ของเว็บนี้ใน Authorized JavaScript origins — ดูขั้นตอนละเอียดใน README
+      ข้อมูลจะถูกเก็บในโฟลเดอร์ซ่อนของแอป (appDataFolder) ใน Drive ของคุณเอง</p>
+    <label>Google OAuth Client ID</label>
+    <input id="gd-clientid" placeholder="xxxx.apps.googleusercontent.com">
+    <button class="btn" id="gd-save-id">บันทึก Client ID</button>
+    <button class="btn" id="gd-upload">⬆ Backup ขึ้น Drive</button>
+    <button class="btn secondary" id="gd-download">⬇ Restore จาก Drive</button>
+    <div id="gd-msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>สำรองข้อมูล (ไฟล์)</h2>
+    <button class="btn" id="ex-json">⬇ Export ข้อมูลทั้งหมด (JSON)</button>
+    <label class="btn secondary" style="cursor:pointer">⬆ Import JSON
+      <input id="im-json" type="file" accept=".json" style="display:none"></label>
+    <button class="btn danger" id="wipe">ลบข้อมูลทั้งหมดในเครื่อง</button>
+  </div>
+
+  <div class="card">
+    <h2>Audit Log (การเปลี่ยนแปลงล่าสุด)</h2>
+    <div class="scroll-x"><table id="auditTable"><thead><tr><th>เวลา</th><th>การกระทำ</th></tr></thead><tbody></tbody></table></div>
+    <p class="muted">หมายเหตุความปลอดภัย: แอปนี้เป็น static site ข้อมูลอยู่ใน localStorage ของเบราว์เซอร์คุณเท่านั้น
+      ไม่มี server กลาง — การควบคุมการเข้าถึงจึงเท่ากับการควบคุมเครื่อง/บัญชีผู้ใช้ของคุณ
+      หากใช้กับข้อมูลบุคคล (คู่ค้า/พนักงาน) โปรดปฏิบัติตาม PDPA: จำกัดผู้เข้าถึงเครื่อง,
+      ล็อกหน้าจอ, และลบข้อมูลเมื่อหมดความจำเป็น</p>
+  </div>
+</section>
+
+</main>
+
+<!-- พื้นที่พิมพ์หนังสือรับรองหัก ณ ที่จ่าย -->
+<div id="printArea"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="js/config.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
