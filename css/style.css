@@ -1,0 +1,63 @@
+:root {
+  --bg: #f5f7fa; --card: #ffffff; --ink: #1a2233; --muted: #64748b;
+  --brand: #0f6b5c; --brand-2: #0d9488; --line: #e2e8f0;
+  --warn-bg: #fef3c7; --warn-ink: #92400e; --danger: #b91c1c; --ok: #047857;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Sarabun", "Segoe UI", Tahoma, sans-serif; background: var(--bg); color: var(--ink); font-size: 15px; }
+header.app { background: var(--brand); color: #fff; padding: 12px 16px; }
+header.app h1 { margin: 0; font-size: 1.15rem; }
+header.app .sub { font-size: .8rem; opacity: .85; }
+.disclaimer { background: var(--warn-bg); color: var(--warn-ink); padding: 8px 16px; font-size: .8rem; line-height: 1.4; }
+nav.tabs { display: flex; overflow-x: auto; background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
+nav.tabs button { flex: 0 0 auto; border: 0; background: none; padding: 12px 14px; font: inherit; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; white-space: nowrap; }
+nav.tabs button.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 600; }
+main { padding: 14px; max-width: 1000px; margin: 0 auto; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+.card h2 { margin: 0 0 10px; font-size: 1.05rem; color: var(--brand); }
+.card h3 { margin: 14px 0 8px; font-size: .95rem; }
+label { display: block; font-size: .82rem; color: var(--muted); margin: 8px 0 3px; }
+input, select, textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: #fff; }
+textarea.code { font-family: ui-monospace, monospace; font-size: .78rem; min-height: 240px; }
+.grid { display: grid; gap: 10px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.btn { display: inline-block; background: var(--brand); color: #fff; border: 0; border-radius: 8px; padding: 10px 16px; font: inherit; cursor: pointer; margin: 6px 6px 0 0; }
+.btn.secondary { background: #fff; color: var(--brand); border: 1px solid var(--brand); }
+.btn.small { padding: 5px 10px; font-size: .8rem; }
+.btn.danger { background: var(--danger); }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; background: #f8fafc; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.result { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px; margin-top: 12px; }
+.result .big { font-size: 1.3rem; font-weight: 700; color: var(--ok); }
+.alert { border-radius: 8px; padding: 10px 12px; margin-top: 10px; font-size: .85rem; }
+.alert.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.alert.danger { background: #fee2e2; color: var(--danger); }
+.alert.ok { background: #ecfdf5; color: var(--ok); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: .72rem; background: #e0f2f1; color: var(--brand); }
+.badge.late { background: #fee2e2; color: var(--danger); }
+.badge.soon { background: var(--warn-bg); color: var(--warn-ink); }
+.muted { color: var(--muted); font-size: .8rem; }
+.tab-page { display: none; }
+.tab-page.active { display: block; }
+.row-actions button { margin: 0 2px; }
+.scroll-x { overflow-x: auto; }
+@media (max-width: 640px) {
+  main { padding: 8px; }
+  .card { padding: 12px; }
+}
+/* ---- print: หนังสือรับรองหัก ณ ที่จ่าย ---- */
+@media print {
+  body * { visibility: hidden; }
+  #printArea, #printArea * { visibility: visible; }
+  #printArea { position: absolute; inset: 0; padding: 24px; background: #fff; }
+}
+#printArea { display: none; }
+@media print { #printArea { display: block; } }
+.cert { border: 2px solid #000; padding: 18px; font-size: .9rem; max-width: 780px; }
+.cert h2 { text-align: center; font-size: 1.05rem; margin: 4px 0 12px; color: #000; }
+.cert table { font-size: .85rem; }
+.cert th, .cert td { border: 1px solid #666; }
+.cert .sign { margin-top: 30px; display: flex; justify-content: space-around; text-align: center; }
